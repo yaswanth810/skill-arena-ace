@@ -121,13 +121,13 @@ function Practice() {
                   disabled={locked}
                   onClick={() => submit(i)}
                   className={`w-full text-left p-3 rounded-lg border transition flex items-center justify-between
-                    ${isCorrect ? "border-[oklch(var(--success))] bg-[oklch(var(--success)/0.12)]" :
+                    ${isCorrect ? "border-success bg-success/10" :
                       isWrong ? "border-destructive bg-destructive/10" :
                       "border-border hover:border-primary/60"}
                     ${locked ? "cursor-default" : "cursor-pointer"}`}
                 >
                   <span>{opt}</span>
-                  {isCorrect && <CheckCircle2 className="h-4 w-4 text-[oklch(var(--success))]" />}
+                  {isCorrect && <CheckCircle2 className="h-4 w-4 text-success" />}
                   {isWrong && <XCircle className="h-4 w-4 text-destructive" />}
                 </button>
               );

@@ -78,7 +78,7 @@ function Dashboard() {
 function StatCard({ icon: Icon, label, value, tone }: { icon: React.ElementType; label: string; value: React.ReactNode; tone?: "success" }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <Icon className={`h-5 w-5 mb-2 ${tone === "success" ? "text-[oklch(var(--success))]" : "text-primary"}`} />
+      <Icon className={`h-5 w-5 mb-2 ${tone === "success" ? "text-success" : "text-primary"}`} />
       <div className="text-2xl font-bold font-display">{value}</div>
       <div className="text-xs text-muted-foreground mt-1">{label}</div>
     </div>
