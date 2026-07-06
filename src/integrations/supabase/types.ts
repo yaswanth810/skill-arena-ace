@@ -14,16 +14,183 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      attempts: {
+        Row: {
+          created_at: string
+          id: string
+          is_correct: boolean
+          question_id: string
+          selected_answer: number
+          time_taken_ms: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_correct: boolean
+          question_id: string
+          selected_answer: number
+          time_taken_ms?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          selected_answer?: number
+          time_taken_ms?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attempts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          college: string | null
+          created_at: string
+          id: string
+          name: string | null
+          streak: number
+          target_companies: string[]
+          updated_at: string
+        }
+        Insert: {
+          college?: string | null
+          created_at?: string
+          id: string
+          name?: string | null
+          streak?: number
+          target_companies?: string[]
+          updated_at?: string
+        }
+        Update: {
+          college?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+          streak?: number
+          target_companies?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          company_tag: string | null
+          correct_answer: number
+          created_at: string
+          created_by: string | null
+          difficulty: Database["public"]["Enums"]["difficulty"]
+          explanation: string | null
+          id: string
+          options: Json
+          question: string
+          topic_id: string
+        }
+        Insert: {
+          company_tag?: string | null
+          correct_answer: number
+          created_at?: string
+          created_by?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty"]
+          explanation?: string | null
+          id?: string
+          options: Json
+          question: string
+          topic_id: string
+        }
+        Update: {
+          company_tag?: string | null
+          correct_answer?: number
+          created_at?: string
+          created_by?: string | null
+          difficulty?: Database["public"]["Enums"]["difficulty"]
+          explanation?: string | null
+          id?: string
+          options?: Json
+          question?: string
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topics: {
+        Row: {
+          category: Database["public"]["Enums"]["topic_category"]
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["topic_category"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["topic_category"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "student"
+      difficulty: "easy" | "medium" | "hard"
+      topic_category: "quantitative" | "logical" | "verbal" | "technical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +317,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "student"],
+      difficulty: ["easy", "medium", "hard"],
+      topic_category: ["quantitative", "logical", "verbal", "technical"],
+    },
   },
 } as const
