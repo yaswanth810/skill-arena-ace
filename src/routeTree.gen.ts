@@ -10,15 +10,28 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TopicsRouteImport } from './routes/topics'
+import { Route as MocksRouteImport } from './routes/mocks'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PracticeSlugRouteImport } from './routes/practice.$slug'
+import { Route as MocksSlugRouteImport } from './routes/mocks.$slug'
 
 const TopicsRoute = TopicsRouteImport.update({
   id: '/topics',
   path: '/topics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MocksRoute = MocksRouteImport.update({
+  id: '/mocks',
+  path: '/mocks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -46,13 +59,21 @@ const PracticeSlugRoute = PracticeSlugRouteImport.update({
   path: '/practice/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MocksSlugRoute = MocksSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => MocksRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/mocks': typeof MocksRouteWithChildren
   '/topics': typeof TopicsRoute
+  '/mocks/$slug': typeof MocksSlugRoute
   '/practice/$slug': typeof PracticeSlugRoute
 }
 export interface FileRoutesByTo {
@@ -60,7 +81,10 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/mocks': typeof MocksRouteWithChildren
   '/topics': typeof TopicsRoute
+  '/mocks/$slug': typeof MocksSlugRoute
   '/practice/$slug': typeof PracticeSlugRoute
 }
 export interface FileRoutesById {
@@ -69,7 +93,10 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/leaderboard': typeof LeaderboardRoute
+  '/mocks': typeof MocksRouteWithChildren
   '/topics': typeof TopicsRoute
+  '/mocks/$slug': typeof MocksSlugRoute
   '/practice/$slug': typeof PracticeSlugRoute
 }
 export interface FileRouteTypes {
@@ -79,17 +106,32 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/leaderboard'
+    | '/mocks'
     | '/topics'
+    | '/mocks/$slug'
     | '/practice/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/auth' | '/dashboard' | '/topics' | '/practice/$slug'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/dashboard'
+    | '/leaderboard'
+    | '/mocks'
+    | '/topics'
+    | '/mocks/$slug'
+    | '/practice/$slug'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/auth'
     | '/dashboard'
+    | '/leaderboard'
+    | '/mocks'
     | '/topics'
+    | '/mocks/$slug'
     | '/practice/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -98,6 +140,8 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  LeaderboardRoute: typeof LeaderboardRoute
+  MocksRoute: typeof MocksRouteWithChildren
   TopicsRoute: typeof TopicsRoute
   PracticeSlugRoute: typeof PracticeSlugRoute
 }
@@ -109,6 +153,20 @@ declare module '@tanstack/react-router' {
       path: '/topics'
       fullPath: '/topics'
       preLoaderRoute: typeof TopicsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mocks': {
+      id: '/mocks'
+      path: '/mocks'
+      fullPath: '/mocks'
+      preLoaderRoute: typeof MocksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -146,14 +204,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mocks/$slug': {
+      id: '/mocks/$slug'
+      path: '/$slug'
+      fullPath: '/mocks/$slug'
+      preLoaderRoute: typeof MocksSlugRouteImport
+      parentRoute: typeof MocksRoute
+    }
   }
 }
+
+interface MocksRouteChildren {
+  MocksSlugRoute: typeof MocksSlugRoute
+}
+
+const MocksRouteChildren: MocksRouteChildren = {
+  MocksSlugRoute: MocksSlugRoute,
+}
+
+const MocksRouteWithChildren = MocksRoute._addFileChildren(MocksRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  LeaderboardRoute: LeaderboardRoute,
+  MocksRoute: MocksRouteWithChildren,
   TopicsRoute: TopicsRoute,
   PracticeSlugRoute: PracticeSlugRoute,
 }

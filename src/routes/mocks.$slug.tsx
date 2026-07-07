@@ -49,9 +49,10 @@ function MockRunner() {
           .from("mock_section_questions")
           .select("question_order, questions(id,question,options,correct_answer,explanation)")
           .eq("section_id", s.id).order("question_order");
+        const rows = (qs ?? []) as unknown as { questions: Question | null }[];
         withQs.push({
           ...s,
-          questions: (qs ?? []).map((r: { questions: Question | null }) => r.questions).filter(Boolean) as Question[],
+          questions: rows.map((r) => r.questions).filter((x): x is Question => !!x),
         });
       }
       setSections(withQs);
