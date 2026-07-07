@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { DoubtChat } from "@/components/DoubtChat";
 
 export const Route = createFileRoute("/practice/$slug")({ component: Practice });
 
@@ -149,6 +150,8 @@ function Practice() {
             </div>
           )}
         </div>
+
+        {locked && q && <DoubtChat questionId={q.id} userId={user.id} />}
       </div>
     </AppShell>
   );

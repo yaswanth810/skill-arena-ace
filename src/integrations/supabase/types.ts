@@ -52,6 +52,198 @@ export type Database = {
           },
         ]
       }
+      doubt_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          question_id: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doubt_messages_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mock_attempts: {
+        Row: {
+          answers: Json
+          id: string
+          mock_test_id: string
+          score: number
+          section_breakdown: Json
+          started_at: string
+          submitted_at: string | null
+          total: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          id?: string
+          mock_test_id: string
+          score?: number
+          section_breakdown?: Json
+          started_at?: string
+          submitted_at?: string | null
+          total?: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          id?: string
+          mock_test_id?: string
+          score?: number
+          section_breakdown?: Json
+          started_at?: string
+          submitted_at?: string | null
+          total?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mock_attempts_mock_test_id_fkey"
+            columns: ["mock_test_id"]
+            isOneToOne: false
+            referencedRelation: "mock_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mock_section_questions: {
+        Row: {
+          id: string
+          question_id: string
+          question_order: number
+          section_id: string
+        }
+        Insert: {
+          id?: string
+          question_id: string
+          question_order?: number
+          section_id: string
+        }
+        Update: {
+          id?: string
+          question_id?: string
+          question_order?: number
+          section_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mock_section_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mock_section_questions_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "mock_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mock_sections: {
+        Row: {
+          duration_minutes: number
+          id: string
+          mock_test_id: string
+          name: string
+          section_order: number
+        }
+        Insert: {
+          duration_minutes?: number
+          id?: string
+          mock_test_id: string
+          name: string
+          section_order?: number
+        }
+        Update: {
+          duration_minutes?: number
+          id?: string
+          mock_test_id?: string
+          name?: string
+          section_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mock_sections_mock_test_id_fkey"
+            columns: ["mock_test_id"]
+            isOneToOne: false
+            referencedRelation: "mock_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mock_tests: {
+        Row: {
+          company: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          mock_type: Database["public"]["Enums"]["mock_type"]
+          slug: string
+          starts_at: string | null
+          title: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          mock_type?: Database["public"]["Enums"]["mock_type"]
+          slug: string
+          starts_at?: string | null
+          title: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          mock_type?: Database["public"]["Enums"]["mock_type"]
+          slug?: string
+          starts_at?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           college: string | null
@@ -190,6 +382,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "student"
       difficulty: "easy" | "medium" | "hard"
+      mock_type: "company" | "weekly"
       topic_category: "quantitative" | "logical" | "verbal" | "technical"
     }
     CompositeTypes: {
@@ -320,6 +513,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "student"],
       difficulty: ["easy", "medium", "hard"],
+      mock_type: ["company", "weekly"],
       topic_category: ["quantitative", "logical", "verbal", "technical"],
     },
   },
