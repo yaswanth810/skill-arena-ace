@@ -1,7 +1,7 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, LayoutDashboard, BookOpen, Shield, LogOut } from "lucide-react";
+import { GraduationCap, LayoutDashboard, BookOpen, Shield, LogOut, Timer, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -29,6 +29,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
             <Link to="/topics" className="px-3 py-1.5 rounded-md hover:bg-secondary flex items-center gap-1.5" activeProps={{ className: "bg-secondary" }}>
               <BookOpen className="h-4 w-4" /> <span className="hidden sm:inline">Topics</span>
+            </Link>
+            <Link to="/mocks" className="px-3 py-1.5 rounded-md hover:bg-secondary flex items-center gap-1.5" activeProps={{ className: "bg-secondary" }}>
+              <Timer className="h-4 w-4" /> <span className="hidden sm:inline">Mocks</span>
+            </Link>
+            <Link to="/leaderboard" className="px-3 py-1.5 rounded-md hover:bg-secondary flex items-center gap-1.5" activeProps={{ className: "bg-secondary" }}>
+              <Trophy className="h-4 w-4" /> <span className="hidden sm:inline">Ranks</span>
             </Link>
             {isAdmin && (
               <Link to="/admin" className="px-3 py-1.5 rounded-md hover:bg-secondary flex items-center gap-1.5 text-primary" activeProps={{ className: "bg-secondary" }}>
