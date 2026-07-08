@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Trash2, Plus } from "lucide-react";
 
-export const Route = createFileRoute("/admin")({ component: AdminPage });
+export const Route = createFileRoute("/admin/")({ component: AdminPage });
 
 type Topic = { id: string; name: string; category: string; slug: string };
 type QRow = { id: string; question: string; difficulty: string; topic_id: string; topics?: { name: string } | null };
