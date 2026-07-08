@@ -69,7 +69,7 @@ function AdminPage() {
   if (loading || !isAdmin) return null;
 
   return (
-    <AppShell>
+    <>
       <h1 className="text-3xl font-bold mb-1">Admin — Question Bank</h1>
       <p className="text-muted-foreground mb-8">Add and manage practice questions.</p>
 
