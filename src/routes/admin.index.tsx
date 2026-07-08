@@ -153,6 +153,6 @@ function AdminPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
