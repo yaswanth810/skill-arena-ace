@@ -18,13 +18,7 @@ type QRow = { id: string; question: string; difficulty: string; topic_id: string
 
 function AdminPage() {
   const { user, isAdmin, loading } = useAuth();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (loading) return;
-    if (!user) navigate({ to: "/auth", replace: true });
-    else if (!isAdmin) navigate({ to: "/dashboard", replace: true });
-  }, [user, isAdmin, loading, navigate]);
 
   const [topics, setTopics] = useState<Topic[]>([]);
   const [questions, setQuestions] = useState<QRow[]>([]);
