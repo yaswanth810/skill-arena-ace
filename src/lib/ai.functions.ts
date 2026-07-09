@@ -111,3 +111,69 @@ export const doubtChat = createServerFn({ method: "POST" })
 
     return { reply };
   });
+
+type GenQ = { question: string; options: string[]; correct_answer: number; explanation: string };
+
+export const generateQuestions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => {
+    const v = d as { topicId?: string; difficulty?: string; count?: number; company?: string };
+    if (!v?.topicId) throw new Error("topicId required");
+    const count = Math.max(1, Math.min(10, Number(v.count ?? 5)));
+    const difficulty = (v.difficulty ?? "medium") as "easy" | "medium" | "hard";
+    return { topicId: v.topicId, difficulty, count, company: v.company ?? "" };
+  })
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId, _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+
+    const { data: topic } = await context.supabase
+      .from("topics").select("name,category,description").eq("id", data.topicId).maybeSingle();
+    if (!topic) throw new Error("Topic not found");
+
+    const companyLine = data.company ? `Style: ${data.company} placement aptitude round.` : "Style: Indian service-based company placement aptitude round (TCS/Infosys/Wipro/Accenture).";
+
+    const raw = await callGateway([
+      {
+        role: "system",
+        content: `You generate placement-aptitude MCQs. Return STRICT JSON only — an array of ${data.count} objects, no prose, no markdown fences. Each object shape: {"question": string, "options": [string, string, string, string], "correct_answer": 0|1|2|3, "explanation": string}. Numeric answers must be exact and verifiable. All 4 options plausible. Explanation 2-4 short lines with the working.`,
+      },
+      {
+        role: "user",
+        content: `Topic: ${topic.name} (${topic.category})\nDifficulty: ${data.difficulty}\n${companyLine}\nGenerate ${data.count} fresh, non-duplicate MCQs.`,
+      },
+    ]);
+
+    // Strip code fences if present
+    const cleaned = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+    let parsed: GenQ[];
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      const m = cleaned.match(/\[[\s\S]*\]/);
+      if (!m) throw new Error("AI returned invalid JSON");
+      parsed = JSON.parse(m[0]);
+    }
+    if (!Array.isArray(parsed)) throw new Error("Expected array");
+
+    const rows = parsed
+      .filter((q) => q && typeof q.question === "string" && Array.isArray(q.options) && q.options.length === 4 && Number.isInteger(q.correct_answer) && q.correct_answer >= 0 && q.correct_answer <= 3)
+      .map((q) => ({
+        topic_id: data.topicId,
+        difficulty: data.difficulty,
+        company_tag: data.company || null,
+        question: q.question,
+        options: q.options,
+        correct_answer: q.correct_answer,
+        explanation: q.explanation ?? null,
+        created_by: context.userId,
+      }));
+
+    if (rows.length === 0) throw new Error("No valid questions generated");
+
+    const { error, data: inserted } = await context.supabase.from("questions").insert(rows).select("id");
+    if (error) throw new Error(error.message);
+    return { inserted: inserted?.length ?? 0, preview: rows.slice(0, 3) };
+  });
