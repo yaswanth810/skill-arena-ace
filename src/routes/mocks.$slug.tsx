@@ -63,11 +63,16 @@ function MockRunner() {
   const totalQs = useMemo(() => sections.reduce((n, s) => n + s.questions.length, 0), [sections]);
 
   const start = async () => {
-    if (!user || !mock) return;
+    if (!user) return toast.error("Please sign in first");
+    if (!mock) return toast.error("Mock not loaded yet");
+    if (totalQs === 0) return toast.error("This mock has no questions yet — ask an admin to add some.");
     const { data, error } = await supabase.from("mock_attempts").insert({
       user_id: user.id, mock_test_id: mock.id, total: totalQs,
     }).select("id").single();
-    if (error || !data) return toast.error(error?.message ?? "Could not start");
+    if (error || !data) {
+      console.error("start mock failed", error);
+      return toast.error(error?.message ?? "Could not start mock");
+    }
     setAttemptId(data.id);
     setStarted(true);
   };
