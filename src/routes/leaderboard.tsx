@@ -32,7 +32,7 @@ function LeaderboardPage() {
       const attempts = (data ?? []) as unknown as { user_id: string; score: number; total: number; submitted_at: string; mock_tests: { title: string } }[];
       const ids = Array.from(new Set(attempts.map((a) => a.user_id)));
       const { data: profs } = await (supabase.rpc as any)("get_profile_names", { _ids: ids });
-      const nameOf = new Map((profs ?? []).map((p) => [p.id, p.name]));
+      const nameOf = new Map<string, string | null>(((profs ?? []) as { id: string; name: string | null }[]).map((p) => [p.id, p.name]));
       // best per user
       const best = new Map<string, Row>();
       for (const a of attempts) {
