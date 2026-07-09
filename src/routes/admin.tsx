@@ -36,6 +36,13 @@ function AdminLayout() {
         >
           <Timer className="h-4 w-4" /> Mock Tests
         </Link>
+        <Link
+          to="/admin/generate"
+          className="px-4 py-2 text-sm flex items-center gap-1.5 border-b-2 border-transparent hover:text-primary"
+          activeProps={{ className: "border-primary text-primary" }}
+        >
+          <Sparkles className="h-4 w-4" /> AI Generate
+        </Link>
       </div>
       <Outlet />
     </AppShell>
