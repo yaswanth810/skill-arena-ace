@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
-import { BookOpen, Timer, Sparkles } from "lucide-react";
+import { BookOpen, Timer, Sparkles, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({ component: AdminLayout });
 
@@ -41,7 +41,14 @@ function AdminLayout() {
           className="px-4 py-2 text-sm flex items-center gap-1.5 border-b-2 border-transparent hover:text-primary"
           activeProps={{ className: "border-primary text-primary" }}
         >
-          <Sparkles className="h-4 w-4" /> AI Generate
+          <Sparkles className="h-4 w-4" /> AI Questions
+        </Link>
+        <Link
+          to="/admin/ai-mock"
+          className="px-4 py-2 text-sm flex items-center gap-1.5 border-b-2 border-transparent hover:text-primary"
+          activeProps={{ className: "border-primary text-primary" }}
+        >
+          <Wand2 className="h-4 w-4" /> AI Mock Builder
         </Link>
       </div>
       <Outlet />
