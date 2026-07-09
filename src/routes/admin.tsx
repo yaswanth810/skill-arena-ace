@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { AppShell } from "@/components/AppShell";
-import { BookOpen, Timer } from "lucide-react";
+import { BookOpen, Timer, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({ component: AdminLayout });
 
