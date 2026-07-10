@@ -36,17 +36,41 @@ function Practice() {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
   }, [user, loading, navigate]);
 
+  const [skipped, setSkipped] = useState(0);
+  const [allDone, setAllDone] = useState(false);
+
   useEffect(() => {
+    if (!user) return;
     (async () => {
       const { data: t } = await supabase.from("topics").select("id,name").eq("slug", slug).maybeSingle();
       if (!t) return;
       setTopic(t);
       const { data: qs } = await supabase.from("questions").select("*").eq("topic_id", t.id);
-      const shuffled = (qs ?? []).sort(() => Math.random() - 0.5) as Question[];
-      setQuestions(shuffled);
+      const all = (qs ?? []) as Question[];
+      const { data: prior } = await supabase
+        .from("attempts").select("question_id").eq("user_id", user.id)
+        .in("question_id", all.map((x) => x.id));
+      const answered = new Set((prior ?? []).map((r: { question_id: string }) => r.question_id));
+      const fresh = all.filter((x) => !answered.has(x.id));
+      setSkipped(answered.size);
+      if (all.length > 0 && fresh.length === 0) setAllDone(true);
+      setQuestions(fresh.sort(() => Math.random() - 0.5));
       setStartedAt(Date.now());
     })();
-  }, [slug]);
+  }, [slug, user]);
+
+  const resetTopic = async () => {
+    if (!user || !topic) return;
+    const { data: qs } = await supabase.from("questions").select("id").eq("topic_id", topic.id);
+    const ids = (qs ?? []).map((x: { id: string }) => x.id);
+    await supabase.from("attempts").delete().eq("user_id", user.id).in("question_id", ids);
+    const all = (await supabase.from("questions").select("*").eq("topic_id", topic.id)).data as Question[] | null;
+    setSkipped(0);
+    setAllDone(false);
+    setQuestions((all ?? []).sort(() => Math.random() - 0.5));
+    setIdx(0); setSelected(null); setLocked(false); setCorrectCount(0);
+    setStartedAt(Date.now());
+  };
 
   const q = questions[idx];
   const total = questions.length;
@@ -94,6 +118,21 @@ function Practice() {
     );
   }
 
+  if (allDone) {
+    return (
+      <AppShell>
+        <div className="max-w-xl mx-auto text-center py-16">
+          <h1 className="text-2xl font-bold">{topic?.name}</h1>
+          <p className="text-muted-foreground mt-2">You've attempted every question in this topic. 🎉</p>
+          <div className="mt-6 flex gap-3 justify-center">
+            <Button onClick={resetTopic}>Reset progress & practice again</Button>
+            <Button variant="secondary" asChild><Link to="/topics">Back to topics</Link></Button>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   if (!q) return <AppShell><div className="text-center py-16 text-muted-foreground">Loading…</div></AppShell>;
 
   return (
@@ -102,13 +141,19 @@ function Practice() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <div className="text-xs uppercase text-muted-foreground">{topic?.name}</div>
-            <div className="text-sm">Question {idx + 1} of {total}</div>
+            <div className="text-sm">Question {idx + 1} of {total} {skipped > 0 && <span className="text-muted-foreground">· {skipped} already done</span>}</div>
           </div>
           <span className="text-xs uppercase px-2 py-1 rounded bg-secondary">{q.difficulty}</span>
         </div>
-        <div className="h-1 w-full bg-secondary rounded mb-6 overflow-hidden">
-          <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+        <div className="h-2 w-full bg-secondary rounded-full mb-2 overflow-hidden">
+          <div className="h-full bg-primary transition-all rounded-full" style={{ width: `${progress}%` }} />
         </div>
+        <div className="flex justify-between text-xs text-muted-foreground mb-6">
+          <span>{Math.round(progress)}% through this session</span>
+          <span>✓ {correctCount} correct</span>
+        </div>
+
+
 
         <div className="rounded-xl border border-border bg-card p-6">
           <div className="text-lg font-medium mb-5">{q.question}</div>
