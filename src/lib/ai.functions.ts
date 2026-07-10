@@ -24,6 +24,29 @@ async function callGateway(messages: Msg[], jsonMode = false): Promise<string> {
   return data.choices?.[0]?.message?.content ?? "";
 }
 
+function sliceLastCompleteArrayItems(s: string): string {
+  // s starts with '['. Walk and record end index after each top-level element.
+  let depth = 0, inStr = false, esc = false, lastGood = -1;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === "\\") esc = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') { inStr = true; continue; }
+    if (c === "{" || c === "[") depth++;
+    else if (c === "}" || c === "]") {
+      depth--;
+      if (depth === 1) lastGood = i; // just closed a top-level element inside the array
+      if (depth === 0) return s.slice(0, i + 1);
+    }
+  }
+  if (lastGood > 0) return s.slice(0, lastGood + 1) + "]";
+  return s;
+}
+
 function parseJsonLoose(raw: string): unknown {
   let s = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
   const firstArr = s.indexOf("["), firstObj = s.indexOf("{");
@@ -33,16 +56,19 @@ function parseJsonLoose(raw: string): unknown {
   const closeChar = openChar === "[" ? "]" : "}";
   const lastClose = s.lastIndexOf(closeChar);
   if (lastClose > 0) s = s.slice(0, lastClose + 1);
-  const attempts = [
-    s,
-    s.replace(/,\s*([}\]])/g, "$1"),
-    s.replace(/,\s*([}\]])/g, "$1").replace(/[\x00-\x1F\x7F]/g, " "),
-  ];
-  let lastErr: unknown;
-  for (const a of attempts) {
-    try { return JSON.parse(a); } catch (e) { lastErr = e; }
+
+  const tryParse = (x: string) => { try { return { ok: true as const, v: JSON.parse(x) }; } catch { return { ok: false as const }; } };
+
+  let r = tryParse(s);
+  if (r.ok) return r.v;
+  r = tryParse(s.replace(/,\s*([}\]])/g, "$1"));
+  if (r.ok) return r.v;
+  try { return JSON.parse(jsonrepair(s)); } catch { /* fall through */ }
+  if (openChar === "[") {
+    const trimmed = sliceLastCompleteArrayItems(s);
+    try { return JSON.parse(jsonrepair(trimmed)); } catch { /* fall through */ }
   }
-  throw lastErr instanceof Error ? lastErr : new Error("Invalid JSON from AI");
+  throw new Error("Invalid JSON from AI");
 }
 
 export const explainQuestion = createServerFn({ method: "POST" })
