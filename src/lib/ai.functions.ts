@@ -166,16 +166,10 @@ export const generateQuestions = createServerFn({ method: "POST" })
       },
     ]);
 
-    // Strip code fences if present
-    const cleaned = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-    let parsed: GenQ[];
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      const m = cleaned.match(/\[[\s\S]*\]/);
-      if (!m) throw new Error("AI returned invalid JSON");
-      parsed = JSON.parse(m[0]);
-    }
+    const parsedUnknown = parseJsonLoose(raw);
+    const parsed = (Array.isArray(parsedUnknown)
+      ? parsedUnknown
+      : (parsedUnknown as { questions?: unknown }).questions) as GenQ[];
     if (!Array.isArray(parsed)) throw new Error("Expected array");
 
     const rows = parsed
