@@ -6,22 +6,42 @@ const MODEL = "google/gemini-2.5-flash";
 
 type Msg = { role: "system" | "user" | "assistant"; content: string };
 
-async function callGateway(messages: Msg[]): Promise<string> {
+async function callGateway(messages: Msg[], jsonMode = false): Promise<string> {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("Missing LOVABLE_API_KEY");
+  const body: Record<string, unknown> = { model: MODEL, messages };
+  if (jsonMode) body.response_format = { type: "json_object" };
   const res = await fetch(GATEWAY_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Lovable-API-Key": key,
-    },
-    body: JSON.stringify({ model: MODEL, messages }),
+    headers: { "Content-Type": "application/json", "Lovable-API-Key": key },
+    body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error("AI is busy right now — please retry in a moment.");
   if (res.status === 402) throw new Error("AI credits exhausted. Add credits in your workspace billing.");
   if (!res.ok) throw new Error(`AI error: ${res.status}`);
   const data = await res.json() as { choices?: { message?: { content?: string } }[] };
   return data.choices?.[0]?.message?.content ?? "";
+}
+
+function parseJsonLoose(raw: string): unknown {
+  let s = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  const firstArr = s.indexOf("["), firstObj = s.indexOf("{");
+  const start = firstArr === -1 ? firstObj : firstObj === -1 ? firstArr : Math.min(firstArr, firstObj);
+  if (start > 0) s = s.slice(start);
+  const openChar = s[0];
+  const closeChar = openChar === "[" ? "]" : "}";
+  const lastClose = s.lastIndexOf(closeChar);
+  if (lastClose > 0) s = s.slice(0, lastClose + 1);
+  const attempts = [
+    s,
+    s.replace(/,\s*([}\]])/g, "$1"),
+    s.replace(/,\s*([}\]])/g, "$1").replace(/[\x00-\x1F\x7F]/g, " "),
+  ];
+  let lastErr: unknown;
+  for (const a of attempts) {
+    try { return JSON.parse(a); } catch (e) { lastErr = e; }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("Invalid JSON from AI");
 }
 
 export const explainQuestion = createServerFn({ method: "POST" })
