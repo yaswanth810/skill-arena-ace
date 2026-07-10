@@ -118,6 +118,21 @@ function Practice() {
     );
   }
 
+  if (allDone) {
+    return (
+      <AppShell>
+        <div className="max-w-xl mx-auto text-center py-16">
+          <h1 className="text-2xl font-bold">{topic?.name}</h1>
+          <p className="text-muted-foreground mt-2">You've attempted every question in this topic. 🎉</p>
+          <div className="mt-6 flex gap-3 justify-center">
+            <Button onClick={resetTopic}>Reset progress & practice again</Button>
+            <Button variant="secondary" asChild><Link to="/topics">Back to topics</Link></Button>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
   if (!q) return <AppShell><div className="text-center py-16 text-muted-foreground">Loading…</div></AppShell>;
 
   return (
@@ -126,11 +141,18 @@ function Practice() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <div className="text-xs uppercase text-muted-foreground">{topic?.name}</div>
-            <div className="text-sm">Question {idx + 1} of {total}</div>
+            <div className="text-sm">Question {idx + 1} of {total} {skipped > 0 && <span className="text-muted-foreground">· {skipped} already done</span>}</div>
           </div>
           <span className="text-xs uppercase px-2 py-1 rounded bg-secondary">{q.difficulty}</span>
         </div>
-        <div className="h-1 w-full bg-secondary rounded mb-6 overflow-hidden">
+        <div className="h-2 w-full bg-secondary rounded-full mb-2 overflow-hidden">
+          <div className="h-full bg-primary transition-all rounded-full" style={{ width: `${progress}%` }} />
+        </div>
+        <div className="flex justify-between text-xs text-muted-foreground mb-6">
+          <span>{Math.round(progress)}% through this session</span>
+          <span>✓ {correctCount} correct</span>
+        </div>
+
           <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
         </div>
 
