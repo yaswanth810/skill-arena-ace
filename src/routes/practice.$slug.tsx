@@ -153,8 +153,7 @@ function Practice() {
           <span>✓ {correctCount} correct</span>
         </div>
 
-          <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
-        </div>
+
 
         <div className="rounded-xl border border-border bg-card p-6">
           <div className="text-lg font-medium mb-5">{q.question}</div>
