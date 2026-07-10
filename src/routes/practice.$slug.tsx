@@ -36,17 +36,41 @@ function Practice() {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
   }, [user, loading, navigate]);
 
+  const [skipped, setSkipped] = useState(0);
+  const [allDone, setAllDone] = useState(false);
+
   useEffect(() => {
+    if (!user) return;
     (async () => {
       const { data: t } = await supabase.from("topics").select("id,name").eq("slug", slug).maybeSingle();
       if (!t) return;
       setTopic(t);
       const { data: qs } = await supabase.from("questions").select("*").eq("topic_id", t.id);
-      const shuffled = (qs ?? []).sort(() => Math.random() - 0.5) as Question[];
-      setQuestions(shuffled);
+      const all = (qs ?? []) as Question[];
+      const { data: prior } = await supabase
+        .from("attempts").select("question_id").eq("user_id", user.id)
+        .in("question_id", all.map((x) => x.id));
+      const answered = new Set((prior ?? []).map((r: { question_id: string }) => r.question_id));
+      const fresh = all.filter((x) => !answered.has(x.id));
+      setSkipped(answered.size);
+      if (all.length > 0 && fresh.length === 0) setAllDone(true);
+      setQuestions(fresh.sort(() => Math.random() - 0.5));
       setStartedAt(Date.now());
     })();
-  }, [slug]);
+  }, [slug, user]);
+
+  const resetTopic = async () => {
+    if (!user || !topic) return;
+    const { data: qs } = await supabase.from("questions").select("id").eq("topic_id", topic.id);
+    const ids = (qs ?? []).map((x: { id: string }) => x.id);
+    await supabase.from("attempts").delete().eq("user_id", user.id).in("question_id", ids);
+    const all = (await supabase.from("questions").select("*").eq("topic_id", topic.id)).data as Question[] | null;
+    setSkipped(0);
+    setAllDone(false);
+    setQuestions((all ?? []).sort(() => Math.random() - 0.5));
+    setIdx(0); setSelected(null); setLocked(false); setCorrectCount(0);
+    setStartedAt(Date.now());
+  };
 
   const q = questions[idx];
   const total = questions.length;
